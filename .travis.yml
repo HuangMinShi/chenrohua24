@@ -6,6 +6,10 @@ cache: npm
 branches:
   only:
     - master # build master branch only
+before_install:
+  - npm install hexo-cli --save -g
+  - npm npm install hexo-deployer-git --save -g
+  - git clone https://github.com/theme-next/hexo-theme-next themes/next
 script:
   - hexo generate # generate static files
 deploy:
