@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/chenrohua24/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/chenrohua24/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/chenrohua24/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/chenrohua24/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/chenrohua24/css/main.css">
+
+
+<link rel="stylesheet" href="/chenrohua24/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"github.com","root":"/chenrohua24/","scheme":"Muse","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="目標於 MySQL 中利用 SELF JOIN，並設定 ON 參考點的符合條件，正確排序飲料銷售量名次。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[MySQL] 如何排序名次 #1">
+<meta property="og:url" content="https://github.com/HuangMinShi/chenrohua24/2019/10/16/how-to-rank-in-mysql-1/index.html">
+<meta property="og:site_name" content="Ethan&#39;s learning notes">
+<meta property="og:description" content="目標於 MySQL 中利用 SELF JOIN，並設定 ON 參考點的符合條件，正確排序飲料銷售量名次。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2019-10-16T17:54:25.000Z">
+<meta property="article:modified_time" content="2020-03-02T12:27:00.631Z">
+<meta property="article:author" content="Ethan Huang">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://github.com/HuangMinShi/chenrohua24/2019/10/16/how-to-rank-in-mysql-1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>[MySQL] 如何排序名次 #1 | Ethan's learning notes</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/chenrohua24/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ethan's learning notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/chenrohua24/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/chenrohua24/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en">
+    <link itemprop="mainEntityOfPage" href="https://github.com/HuangMinShi/chenrohua24/2019/10/16/how-to-rank-in-mysql-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/chenrohua24/./images/avatar.jpg">
+      <meta itemprop="name" content="Ethan Huang">
+      <meta itemprop="description" content="具現化系">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ethan's learning notes">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [MySQL] 如何排序名次 #1
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-10-16 17:54:25" itemprop="dateCreated datePublished" datetime="2019-10-16T17:54:25+00:00">2019-10-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-03-02 12:27:00" itemprop="dateModified" datetime="2020-03-02T12:27:00+00:00">2020-03-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h1><p>於 MySQL 中利用 SELF JOIN，並設定 ON 參考點的符合條件，正確排序飲料銷售量名次。</p>
+<a id="more"></a>
+
+<h1 id="情境"><a href="#情境" class="headerlink" title="情境"></a>情境</h1><p>回顧自己在 AC 學期三 MySQL 伺服器上學習 SQL 語法時，遇到一個實境章節是建立飲料店的資料庫，在此簡單假設有飲料及訂單 2 張資料表，飲料有編號（id）、名稱（name）及價格欄位（price），訂單則有編號（id）、銷售量（quantity）及飲料編號（drink_id）。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">drinks : id, name, price</span><br><span class="line">orders : id, quantity, drink_id</span><br></pre></td></tr></table></figure>
+
+<p>現在想像飲料店老闆想知道目前銷售量最高的飲料是哪一種？身為最有效率員工的你並沒有想的太多，很快查詢出銷售量最高的飲料就是緋聞紅茶。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">  drinks.<span class="string">`name`</span>, </span><br><span class="line">  <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> <span class="string">`total_quantity`</span></span><br><span class="line"><span class="keyword">FROM</span> orders</span><br><span class="line"><span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`total_quantity`</span> <span class="keyword">DESC</span></span><br><span class="line"><span class="keyword">LIMIT</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>total_quantity</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>緋聞紅茶</td>
+<td>21</td>
+</tr>
+</tbody></table>
+<p>只有緋聞紅茶嗎？老闆略帶狐疑地再問一次，你扭扭捏捏地回應著「是阿．．．」，雖然你嘴上這樣說，但你心裡開始不安了起來。萬一店裡的不熟紅茶也剛好賣 21 杯，那麼銷售量最好的就不是只有一種，此時的你也只講對了一半，這樣的微小錯誤，未來可能產生蝴蝶效應，而導致老闆決策方向錯誤甚至虧損，相信這不是身為一個社畜扛的起。</p>
+<h1 id="問題"><a href="#問題" class="headerlink" title="問題"></a>問題</h1><p>面對上述諸如此類，排山倒海而來的恐慌及壓力，你勢必要了解各種飲料的銷售量排行，好讓你能一目了然是否有並列第一的情況。為此，我們的目標是針對各種飲料的銷售量排序並呈現出正確名次，這裡的問題是如何排名？</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>total_quantity</th>
+<th>rank</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>緋聞紅茶</td>
+<td>21</td>
+<td>1</td>
+</tr>
+<tr>
+<td>不熟紅茶</td>
+<td>21</td>
+<td>1</td>
+</tr>
+<tr>
+<td>雪花冷路</td>
+<td>20</td>
+<td>3</td>
+</tr>
+<tr>
+<td>中正路路</td>
+<td>12</td>
+<td>4</td>
+</tr>
+<tr>
+<td>莉莉紅茶</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>新芽紅茶</td>
+<td>2</td>
+<td>6</td>
+</tr>
+<tr>
+<td>春天冷路</td>
+<td>2</td>
+<td>6</td>
+</tr>
+<tr>
+<td>中山路咩</td>
+<td>1</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<h1 id="解決"><a href="#解決" class="headerlink" title="解決"></a>解決</h1><ol>
+<li><p>MySQL 內建的函式 RANK()？<br>就在閱讀官方技術文件後，發現只有 MySQL 8.0 才支援 RANK()，如果使用的是 5.6 還是得自己生出一個。有道是凡事做最好準備，最壞打算，這裡我們就不使用 RANK()了。</p>
+</li>
+<li><p>單純使用查詢語法搭配 WHERE 關鍵字及運算子來計算名次？<br>首先將例子簡單及縮小化，以同學分數排名做範例。之後再丟回來也不遲。</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>score</th>
+<th>rank</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>90</td>
+<td>1</td>
+</tr>
+<tr>
+<td>B</td>
+<td>80</td>
+<td>2</td>
+</tr>
+<tr>
+<td>C</td>
+<td>70</td>
+<td>3</td>
+</tr>
+<tr>
+<td>D</td>
+<td>60</td>
+<td>4</td>
+</tr>
+<tr>
+<td>E</td>
+<td>50</td>
+<td>5</td>
+</tr>
+<tr>
+<td>這裡想知道的是</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>E 同學為何排名 5？因為 A, B, C, D 等 4 位同學分數高於 E。<br>D 同學為何排名 4？因為 A, B, C 等 3 位同學分數高於 D。</p>
+<p>請問施主，參透出什麼洞見了嗎？</p>
+<p>沒錯，只要找出大於等於自己分數的個數，就是該位同學的名次。</p>
+<p>知道名次從何而來，接下來的問題是如何比對分數，而從過程當中發現，比來比去其實就同一個班級同學的分數互做比較，而在同一張表裡互相比對可以使用 SELF JOIN，自己跟自己合併。有了概念後再拉回來飲料店的例子，你迫不及待地快速寫下步驟及語法。</p>
+<ol>
+<li>將訂單以飲料 ID 分組，加總 quantity 後按 total_quantity 降冪排序。</li>
+<li>將上述查詢後的資料表，採 SELF JOIN，並分別命名為 a 及 b。</li>
+<li>從 a 資料表的角度思考，其參考點設為 b.total_quantity 大於等於 a.total_quantity，意思是誰的銷售量大於等於我。</li>
+<li>一樣是站在 a 資料表的角度，去計算大於等於 a.total_quantity 的個數當作排名的欄位。</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  a.<span class="string">`name`</span>, </span><br><span class="line">  a.<span class="string">`total_quantity`</span>, </span><br><span class="line">  <span class="keyword">COUNT</span>(b.<span class="string">`total_quantity`</span>) <span class="keyword">AS</span> <span class="keyword">rank</span></span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="string">`name`</span>, </span><br><span class="line">    <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> total_quantity</span><br><span class="line">  <span class="keyword">FROM</span> orders </span><br><span class="line">  <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line">  <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">  <span class="keyword">ORDER</span> <span class="keyword">BY</span> total_quantity <span class="keyword">DESC</span></span><br><span class="line">) <span class="keyword">AS</span> a</span><br><span class="line"><span class="keyword">JOIN</span> </span><br><span class="line">(</span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="string">`name`</span>, </span><br><span class="line">    <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> total_quantity</span><br><span class="line">  <span class="keyword">FROM</span> orders </span><br><span class="line">  <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line">  <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">  <span class="keyword">ORDER</span> <span class="keyword">BY</span> total_quantity <span class="keyword">DESC</span></span><br><span class="line">) <span class="keyword">AS</span> b</span><br><span class="line"><span class="keyword">ON</span> a.<span class="string">`total_quantity`</span> &lt;= b.<span class="string">`total_quantity`</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> a.<span class="string">`name`</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> a.<span class="string">`total_quantity`</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+
+<p>接下來，就是見證奇蹟的時刻了。</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>total_quantity</th>
+<th>rank</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>緋聞紅茶</td>
+<td>21</td>
+<td>2</td>
+</tr>
+<tr>
+<td>不熟紅茶</td>
+<td>21</td>
+<td>2</td>
+</tr>
+<tr>
+<td>雪花冷路</td>
+<td>20</td>
+<td>3</td>
+</tr>
+<tr>
+<td>中正路路</td>
+<td>12</td>
+<td>4</td>
+</tr>
+<tr>
+<td>莉莉紅茶</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>新芽紅茶</td>
+<td>2</td>
+<td>7</td>
+</tr>
+<tr>
+<td>春天冷路</td>
+<td>2</td>
+<td>7</td>
+</tr>
+<tr>
+<td>中山路咩</td>
+<td>1</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<p>誒老大不是阿～ 怎麼有 2 個 2？奇蹟．．．儼然沒有發生。</p>
+</li>
+</ol>
+<h1 id="再解決"><a href="#再解決" class="headerlink" title="再解決"></a>再解決</h1><p>此刻一股無力感從腳底、從背脊、從頭頂開始慢慢侵蝕著你，<br>但你仍故作鎮定，再次進行沙盤推演。</p>
+<p>緋聞紅茶，誰的銷售量大於等於緋聞紅茶？不熟紅茶及它自己，計數 2。<br>不熟紅茶，誰的銷售量大於等於不熟紅茶？緋聞紅茶及它自己，計數 2。<br>雪花冷路，誰的銷售量大於等於雪花冷路？緋聞、不熟及它自己，計數 3。</p>
+<p>瞬間你心裡阿了一聲，彷彿看見一道光。原來緋聞紅茶及不熟紅茶本該是並列第 1 ，但他們把對方視為己出，算進自己的計數之中，所以只要將銷售量相等的對方踢出自己的計數，並保留銷售量一樣的自己，這樣一來，便能同時並列第 1。修改 line 25 ON 之後的條件並新增 line 26 如下。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">  a.<span class="string">`name`</span>, </span><br><span class="line">  a.<span class="string">`total_quantity`</span>, </span><br><span class="line">  <span class="keyword">COUNT</span>(b.<span class="string">`total_quantity`</span>) <span class="keyword">AS</span> <span class="keyword">rank</span></span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="string">`name`</span>, </span><br><span class="line">    <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> total_quantity</span><br><span class="line">  <span class="keyword">FROM</span> orders </span><br><span class="line">  <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line">  <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">  <span class="keyword">ORDER</span> <span class="keyword">BY</span> total_quantity <span class="keyword">DESC</span></span><br><span class="line">) <span class="keyword">AS</span> a</span><br><span class="line"><span class="keyword">JOIN</span> </span><br><span class="line">(</span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="string">`name`</span>, </span><br><span class="line">    <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> total_quantity</span><br><span class="line">  <span class="keyword">FROM</span> orders </span><br><span class="line">  <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line">  <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">  <span class="keyword">ORDER</span> <span class="keyword">BY</span> total_quantity <span class="keyword">DESC</span></span><br><span class="line">) <span class="keyword">AS</span> b</span><br><span class="line"><span class="keyword">ON</span> a.<span class="string">`total_quantity`</span> &lt; b.<span class="string">`total_quantity`</span></span><br><span class="line"><span class="keyword">OR</span> (a.<span class="string">`total_quantity`</span> = b.<span class="string">`total_quantity`</span> <span class="keyword">AND</span> a.<span class="string">`name`</span> = b.<span class="string">`name`</span>)</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> a.<span class="string">`name`</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> a.<span class="string">`total_quantity`</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+<p>再來一次<br>緋聞紅茶，誰的銷售量大於緋聞紅茶？沒有，但請算進自己，計數 1。<br>不熟紅茶，誰的銷售量大於不熟紅茶？沒有，但請算進自己，計數 1。<br>雪花冷路，誰的銷售量大於雪花冷路？緋聞、不熟，再加自己，計數 3。</p>
+<p>看看結果如何。</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>total_quantity</th>
+<th>rank</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>緋聞紅茶</td>
+<td>21</td>
+<td>1</td>
+</tr>
+<tr>
+<td>不熟紅茶</td>
+<td>21</td>
+<td>1</td>
+</tr>
+<tr>
+<td>雪花冷路</td>
+<td>20</td>
+<td>3</td>
+</tr>
+<tr>
+<td>中正路路</td>
+<td>12</td>
+<td>4</td>
+</tr>
+<tr>
+<td>莉莉紅茶</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>新芽紅茶</td>
+<td>2</td>
+<td>6</td>
+</tr>
+<tr>
+<td>春天冷路</td>
+<td>2</td>
+<td>6</td>
+</tr>
+<tr>
+<td>中山路咩</td>
+<td>1</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<p>如預期般正確顯示銷售量排名。</p>
+<p>往後你將能充滿信心地向老闆報告，目前有 2 種飲料的銷售量同時並列第一，分別是緋聞紅茶及不熟紅茶。再也沒有當初心裡那種忐忑不安的心虛感，你澈底地成為了一名盡責的社畜。</p>
+<h1 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h1><p>其實初始的想法很單純，僅僅只想列出名次以獲得正確且完整的資訊。弄到後來卻花了將近 4 個小時再思考。從名次如何產生、如何比對到如何寫出 SQL 的語法。逐步地拆出問題，也逐步地找到解決方法。</p>
+<p>然而這樣就滿足了嗎？</p>
+<p>不是吧！</p>
+<p>因為 SELF JOIN 需要重複寫 2 次子查詢，在目前了解 SQL的範圍內，這樣的寫法對後續維護是不難，但總是感到不夠完美及盡興。</p>
+<p>所以我利用 Google 搜尋同樣的問題，發現了更簡短的寫法，不過需要額外的運算子幫忙，詳情請接下一篇。這裡簡略敘述一下，主要是使用 User variables 及 IF 的條件判斷式，程序則是讓子查詢做完 SUM( quantity ) 後丟上來作條件判斷並儲存名次，判斷完再往上丟到最外層去篩選欄位，算是相對易懂的方式。</p>
+<p>最後總結本篇於 MySQL 學習 SQL 的過程，目標是正確查詢飲料店資料庫中銷售量最高的飲料，首先利用同學分數的簡單例子做名次的推導，了解名次產生的方式之後，回到飲料店的情境，以 SELF JOIN 於同一張資料表做銷售量的比對，最後針對名次並列顯示的問題，微微地調整了 ON 的條件敘述，成功地完成排序名次的目標。<br><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/chenrohua24/2020/03/02/hello-world/" rel="next" title="Hello World">
+      Hello World <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#目標"><span class="nav-number">1.</span> <span class="nav-text">目標</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#情境"><span class="nav-number">2.</span> <span class="nav-text">情境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#問題"><span class="nav-number">3.</span> <span class="nav-text">問題</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解決"><span class="nav-number">4.</span> <span class="nav-text">解決</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#再解決"><span class="nav-number">5.</span> <span class="nav-text">再解決</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#結論"><span class="nav-number">6.</span> <span class="nav-text">結論</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ethan Huang"
+      src="/chenrohua24/./images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ethan Huang</p>
+  <div class="site-description" itemprop="description">具現化系</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/chenrohua24/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HuangMinShi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HuangMinShi"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ethan Huang</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.2
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/chenrohua24/lib/anime.min.js"></script>
+  <script src="/chenrohua24/lib/velocity/velocity.min.js"></script>
+  <script src="/chenrohua24/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/chenrohua24/js/utils.js"></script>
+
+<script src="/chenrohua24/js/motion.js"></script>
+
+
+<script src="/chenrohua24/js/schemes/muse.js"></script>
+
+
+<script src="/chenrohua24/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
