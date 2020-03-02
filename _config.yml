@@ -3,12 +3,12 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Chenrohua's Blog
-subtitle: ''
-description: '修練為具現化系 100% 的男子'
+title: "Ethan's learning notes"
+subtitle:
+description: "具現化系"
 keywords:
 author: Ethan Huang
-language: 
+language: en
 timezone: ''
 
 # URL
