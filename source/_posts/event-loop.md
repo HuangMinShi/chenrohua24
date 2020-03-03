@@ -3,19 +3,17 @@ title: '理解 Event Loop'
 date: 2020-10-27 17:54:25
 tags:
 ---
+# Target
+理解並敘述 Event Loop 是什麼？
+<!-- more -->
+
 # Contents
-* Target
 * JavaScript in browser 
 * JavaScript Engine 
 * Event Loop 
 * Zero delays
 * Conclusion
 * References
-
-# Target
-理解並敘述 Event Loop 是什麼？
-
-<!-- more -->
 
 # JavaScript in browser
 網路應用程式包含了很多技術，並且共同組成 JS Runtime Environment 。除了由 JavaScript Engine 負責解析程式碼之外，瀏覽器也提供了許多 Web API 像是 DOM, setTimeout 來與使用者進行互動，以及等等會提到的 Event Loop, Event Queue and Event Table。而透過 Event Loop 搭配非同步的方式進而達成 JavaScript 能同時處理多個工作的錯覺。
