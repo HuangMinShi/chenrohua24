@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/chenrohua24/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/chenrohua24/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/chenrohua24/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/chenrohua24/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/chenrohua24/css/main.css">
+
+
+<link rel="stylesheet" href="/chenrohua24/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"github.com","root":"/chenrohua24/","scheme":"Muse","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Target理解並敘述 Event Loop 是什麼？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="理解 Event Loop">
+<meta property="og:url" content="https://github.com/HuangMinShi/chenrohua24/2020/10/27/event-loop/index.html">
+<meta property="og:site_name" content="Ethan&#39;s learning notes">
+<meta property="og:description" content="Target理解並敘述 Event Loop 是什麼？">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.imgur.com/UEtUTKQ.jpg">
+<meta property="og:image" content="https://i.imgur.com/n3ryqFK.jpg">
+<meta property="og:image" content="https://i.imgur.com/zt6zG4x.jpg">
+<meta property="og:image" content="https://i.imgur.com/UCRDzxX.jpg">
+<meta property="og:image" content="https://i.imgur.com/MiLqppS.jpg">
+<meta property="og:image" content="https://i.imgur.com/JiDO1bR.jpg">
+<meta property="article:published_time" content="2020-10-27T17:54:25.000Z">
+<meta property="article:modified_time" content="2020-03-03T13:21:22.137Z">
+<meta property="article:author" content="Ethan Huang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/UEtUTKQ.jpg">
+
+<link rel="canonical" href="https://github.com/HuangMinShi/chenrohua24/2020/10/27/event-loop/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>理解 Event Loop | Ethan's learning notes</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/chenrohua24/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ethan's learning notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/chenrohua24/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/chenrohua24/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en">
+    <link itemprop="mainEntityOfPage" href="https://github.com/HuangMinShi/chenrohua24/2020/10/27/event-loop/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/chenrohua24/./images/avatar.jpg">
+      <meta itemprop="name" content="Ethan Huang">
+      <meta itemprop="description" content="具現化系">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ethan's learning notes">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          理解 Event Loop
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-10-27 17:54:25" itemprop="dateCreated datePublished" datetime="2020-10-27T17:54:25+00:00">2020-10-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-03-03 13:21:22" itemprop="dateModified" datetime="2020-03-03T13:21:22+00:00">2020-03-03</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Target"><a href="#Target" class="headerlink" title="Target"></a>Target</h1><p>理解並敘述 Event Loop 是什麼？</p>
+<a id="more"></a>
+
+<h1 id="Contents"><a href="#Contents" class="headerlink" title="Contents"></a>Contents</h1><ul>
+<li>JavaScript in browser </li>
+<li>JavaScript Engine </li>
+<li>Event Loop </li>
+<li>Zero delays</li>
+<li>Conclusion</li>
+<li>References</li>
+</ul>
+<h1 id="JavaScript-in-browser"><a href="#JavaScript-in-browser" class="headerlink" title="JavaScript in browser"></a>JavaScript in browser</h1><p>網路應用程式包含了很多技術，並且共同組成 JS Runtime Environment 。除了由 JavaScript Engine 負責解析程式碼之外，瀏覽器也提供了許多 Web API 像是 DOM, setTimeout 來與使用者進行互動，以及等等會提到的 Event Loop, Event Queue and Event Table。而透過 Event Loop 搭配非同步的方式進而達成 JavaScript 能同時處理多個工作的錯覺。</p>
+<h1 id="JavaScript-Engine"><a href="#JavaScript-Engine" class="headerlink" title="JavaScript Engine"></a>JavaScript Engine</h1><blockquote>
+<p>it’s job is to go through all the lines of JavaScript in an application and process them one at a time</p>
+</blockquote>
+<p>JavaScript Engine 所做的事情，是去遍歷應用程式當中每一行程式碼，而且一次執行一段。這同時也注定了 JavaScript 是單線程（single threaded）的程式語言。</p>
+<p>那麼 JavaScript Engine 如何做到一次只執行一段？它利用了 Call Stack 去記錄目前程式執行的部分。</p>
+<p>Call Stack 是一種具有先進後出（FILO, First-in-Last-out）性質的有序串列，就像搭電梯一樣，第一個進電梯的人會最後出電梯，最後進電梯的則最先出來。因此程式執行時會層層往上疊，而執行結束後層層跳離（pop off）。舉個例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* main.js */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> one = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'1'</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> two = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  one()</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'2'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">two()</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Results:</span></span><br><span class="line"><span class="comment">* =&gt; 1</span></span><br><span class="line"><span class="comment">* =&gt; 2</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>流程：</p>
+<ol>
+<li>執行全域環境的程式 main.js</li>
+<li>調用 two</li>
+<li>引起 one 被調用</li>
+<li>執行 one ，console 輸出 ‘1’，此時 one 無其他程式碼，執行完畢從 Call Stack 跳離（pop off）</li>
+<li>執行 two ，console 輸出 ‘2’，此時 two 無其他程式碼，執行完畢從 Call Stack 跳離（pop off）</li>
+<li>最後 main.js 也沒有其他程式碼可執行，執行完畢從 Call Stack 跳離（pop off）</li>
+</ol>
+<p><a href="https://www.youtube.com/watch?v=aqI8Aovw4Po" target="_blank" rel="noopener">Javascript Call Stack demo</a></p>
+<p>上述其中一個程式碼片段若需要執行非常久的時間，則後面的程式碼就會等待執行，好像卡住一樣，這樣的情況稱作阻塞 （blocking）。</p>
+<p>例如請求資料的 AJAX request，如果是以同步方式執行的話，因為必須等待伺服器回應，才能從 Call Stack 跳離（pop off）。還沒接收回應前整個瀏覽器頁面停滯，即使點了其他 button，瀏覽器就只是掛在那裡，不會有任何反應。</p>
+<h1 id="Event-Loop"><a href="#Event-Loop" class="headerlink" title="Event Loop"></a>Event Loop</h1><p>如何避免阻塞？</p>
+<blockquote>
+<p>JavaScript provides a mechanism and it’s via asynchronous callback functions.</p>
+</blockquote>
+<p>非同步搭配 Callback Function，常見於將函式當成參數傳進另外一個函式之中，而這些被傳進的函式並沒有馬上被執行，而是等待條件觸發後才執行。</p>
+<p>底下以 setTimeout 為例。setTimeout 函式是瀏覽器提供的 API ，不是 JavaScript Engine 本身的功能，當調用 setTimeout 函式時，瀏覽器會提供一個計時器用來計時秒數。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Within main.js */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> one = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'1'</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> two = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  setTimeout(one, <span class="number">5000</span>)</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'2'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">two();</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Results:</span></span><br><span class="line"><span class="comment"> * =&gt; 2</span></span><br><span class="line"><span class="comment"> * (And 5 seconds later)</span></span><br><span class="line"><span class="comment"> * =&gt; 1</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>…（如上個例子所述）</p>
+</li>
+<li><p>執行 two，並調用 setTimeout，setTimeout 進入 Call Stack<br><img src="https://i.imgur.com/UEtUTKQ.jpg" alt=""></p>
+</li>
+<li><p>執行 setTimeout，Call Stack 向 Event Table 註冊 Callback Function （one），並同時記錄觸發事件，也就是等待 5 秒。<br><img src="https://i.imgur.com/n3ryqFK.jpg" alt=""></p>
+<p>Event Table 就是個註冊站，Call Stack 讓 Event Table 註冊一個特定函式（在這裡為 one）以及觸發的事件（wait 5000 ms）。當事件發生，Event Table將對應的函式移到 Event Queue 等待被調用。而 Event Queue 就像是個暫存區，依序存放著等待被調用至 Call Stack 的函式。並且具有先進先出（FIFO, First-in-First-out）的性質，就如同排隊，先排到的先買到。</p>
+<p>那麼何時會被調用至 Call Stack ？</p>
+<p>JavaScript Engine 利用 Event Loop 機制來解決何時會被調用的問題。這個處理程序將不斷地檢查 Call Stack 當中是否已清空，若清空，則檢查 Event Queue 是否有等待被調用的函式，如果有，則將第一個等待被調用的函式移至 Call Stack 執行。如果沒有，仍不斷地反覆檢查 Call Stack 及 Event Queue。這個監控的過程就是 Event Loop，就像 While Loop 一樣不停的運作。接續上述例子：</p>
+</li>
+<li><p>setTimeout 執行完畢跳離（pop off）Call Stack，此時 Call Stack 將不再有阻塞情形，所以 two 繼續執行下一行， console 輸出 ‘2’<br><img src="https://i.imgur.com/zt6zG4x.jpg" alt=""></p>
+</li>
+<li><p>two 執行完畢，跳離（pop off）Call Stack，而後 main.js 也是一樣。此時 Event Table 仍於背景持續監控是否有任何已註冊事件發生<br><img src="https://i.imgur.com/UCRDzxX.jpg" alt=""></p>
+</li>
+<li><p>5 秒鐘過去，等待 5秒的事件完成，Event Table 將剛剛註冊的 Callback Function （one）移至 Event Queue<br><img src="https://i.imgur.com/MiLqppS.jpg" alt=""></p>
+</li>
+<li><p>Event Loop 也是不斷地在監控 Call Stack 及 Event Queue。一旦確認 Call Stack 為空後，且 Event Queue 也有一個等待被調用的函式，於是將這個函式 one 轉移至 Call Stack 執行。one 執行，console 輸出 ‘2’，並且執行完畢，跳離 Call Stack。<br><img src="https://i.imgur.com/JiDO1bR.jpg" alt=""></p>
+</li>
+</ul>
+<p><a href="https://www.youtube.com/watch?v=lo3YA_-8MDM" target="_blank" rel="noopener">JavaScript Event Loop with setTimeout demo</a></p>
+<h1 id="Zero-delays"><a href="#Zero-delays" class="headerlink" title="Zero delays"></a>Zero delays</h1><p>如果上述例子使用 setTimeout 並且希望在 0 秒後馬上執行，會是一樣的結果嗎？</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Within main.js */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> one = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'1'</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> two = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  setTimeout(one, <span class="number">0</span>)</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'2'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">two();</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Results:</span></span><br><span class="line"><span class="comment"> * =&gt; 2</span></span><br><span class="line"><span class="comment"> * (And 0 seconds later)</span></span><br><span class="line"><span class="comment"> * =&gt; 1</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+<p>是的，即使 0 秒，它一樣會先將 Callback Function 註冊到 Event Table 中，並計時 0 秒，時間到，再把 Callback Function 放到 Event Queue，藉由 Event Loop 的機制等到所有 Call Stack 的內容清空後，而且 Event Queue 當中前面無其他的待處理事件時，才會立即執行這個 Callback Function。</p>
+<p>因此 setTimeout 的時間表示的是執行的最少等待時間，並非保證會被執行的時間。</p>
+<h1 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h1><p>Event Loop 是一種機制，不斷地監控 Call Stack 及 Event Queue，如同一個無限迴圈。一旦 Call Stack 清空，則把 Event Queue 裡，第一個待執行函式移到 Call Stack 執行。而透過這個機制，搭配非同步方法進而快速切換並處理多項工作，而不再只是卡著不動了。</p>
+<h1 id="References"><a href="#References" class="headerlink" title="References"></a>References</h1><p><a href="https://developer.mozilla.org/zh-TW/docs/Web/JavaScript/EventLoop" target="_blank" rel="noopener">並行模型和事件循環 - MDN</a><br><a href="http://altitudelabs.com/blog/what-is-the-javascript-event-loop/" target="_blank" rel="noopener">What is the JavaScript event loop?</a><br><a href="https://2014.jsconf.eu/speakers/philip-roberts-what-the-heck-is-the-event-loop-anyway.html" target="_blank" rel="noopener">Philip Roberts: What the heck is the event loop anyway?</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/chenrohua24/2019/10/23/use-xlsx-style/" rel="prev" title="以 xlsx-style 處理 Excel 文件">
+      <i class="fa fa-chevron-left"></i> 以 xlsx-style 處理 Excel 文件
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Target"><span class="nav-number">1.</span> <span class="nav-text">Target</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Contents"><span class="nav-number">2.</span> <span class="nav-text">Contents</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#JavaScript-in-browser"><span class="nav-number">3.</span> <span class="nav-text">JavaScript in browser</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#JavaScript-Engine"><span class="nav-number">4.</span> <span class="nav-text">JavaScript Engine</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Event-Loop"><span class="nav-number">5.</span> <span class="nav-text">Event Loop</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zero-delays"><span class="nav-number">6.</span> <span class="nav-text">Zero delays</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Conclusion"><span class="nav-number">7.</span> <span class="nav-text">Conclusion</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#References"><span class="nav-number">8.</span> <span class="nav-text">References</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ethan Huang"
+      src="/chenrohua24/./images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ethan Huang</p>
+  <div class="site-description" itemprop="description">具現化系</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/chenrohua24/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HuangMinShi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HuangMinShi"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ethan Huang</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.2
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/chenrohua24/lib/anime.min.js"></script>
+  <script src="/chenrohua24/lib/velocity/velocity.min.js"></script>
+  <script src="/chenrohua24/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/chenrohua24/js/utils.js"></script>
+
+<script src="/chenrohua24/js/motion.js"></script>
+
+
+<script src="/chenrohua24/js/schemes/muse.js"></script>
+
+
+<script src="/chenrohua24/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

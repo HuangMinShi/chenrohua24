@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/chenrohua24/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/chenrohua24/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/chenrohua24/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/chenrohua24/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/chenrohua24/css/main.css">
+
+
+<link rel="stylesheet" href="/chenrohua24/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"github.com","root":"/chenrohua24/","scheme":"Muse","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="目標於 MySQL 中宣告使用者變數 、利用 IF 條件判斷並考量名次並列情形，正確排序飲料銷售量名次。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[MySQL] 如何排序名次 #2">
+<meta property="og:url" content="https://github.com/HuangMinShi/chenrohua24/2019/10/17/how-to-rank-in-mysql-2/index.html">
+<meta property="og:site_name" content="Ethan&#39;s learning notes">
+<meta property="og:description" content="目標於 MySQL 中宣告使用者變數 、利用 IF 條件判斷並考量名次並列情形，正確排序飲料銷售量名次。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2019-10-17T17:54:25.000Z">
+<meta property="article:modified_time" content="2020-03-03T13:21:22.137Z">
+<meta property="article:author" content="Ethan Huang">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://github.com/HuangMinShi/chenrohua24/2019/10/17/how-to-rank-in-mysql-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>[MySQL] 如何排序名次 #2 | Ethan's learning notes</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/chenrohua24/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ethan's learning notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/chenrohua24/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/chenrohua24/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en">
+    <link itemprop="mainEntityOfPage" href="https://github.com/HuangMinShi/chenrohua24/2019/10/17/how-to-rank-in-mysql-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/chenrohua24/./images/avatar.jpg">
+      <meta itemprop="name" content="Ethan Huang">
+      <meta itemprop="description" content="具現化系">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ethan's learning notes">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [MySQL] 如何排序名次 #2
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-10-17 17:54:25" itemprop="dateCreated datePublished" datetime="2019-10-17T17:54:25+00:00">2019-10-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-03-03 13:21:22" itemprop="dateModified" datetime="2020-03-03T13:21:22+00:00">2020-03-03</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h1><p>於 MySQL 中宣告使用者變數 、利用 IF 條件判斷並考量名次並列情形，正確排序飲料銷售量名次。</p>
+<a id="more"></a>
+
+<h1 id="無名次並列"><a href="#無名次並列" class="headerlink" title="無名次並列"></a>無名次並列</h1><p>延續上一篇的情境，一樣假設有飲料及訂單 2 張資料表，定義欄位如下 ：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">drinks : id, name, price</span><br><span class="line">orders : id, quantity, drink_id</span><br></pre></td></tr></table></figure>
+
+<p>想知道哪種飲料銷售量最高？SQL 語法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 宣告使用者變數及賦值</span></span><br><span class="line"><span class="keyword">SET</span> @prev = <span class="literal">null</span>, @curr = <span class="literal">null</span>, @<span class="keyword">rank</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  b.<span class="string">`name`</span>,</span><br><span class="line">  b.<span class="string">`total_quantity`</span>,</span><br><span class="line">  b.<span class="string">`rank`</span></span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="comment">-- 條件判斷名次</span></span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    a.*,</span><br><span class="line">  @prev := @curr,</span><br><span class="line">  @curr := a.<span class="string">`total_quantity`</span>,</span><br><span class="line">  @<span class="keyword">rank</span> := <span class="keyword">IF</span>(@prev = @curr, @<span class="keyword">rank</span>, @<span class="keyword">rank</span> + <span class="number">1</span>) <span class="keyword">AS</span> <span class="keyword">rank</span></span><br><span class="line">  <span class="keyword">FROM</span></span><br><span class="line">  (</span><br><span class="line">    <span class="comment">-- 子查詢計算總銷量</span></span><br><span class="line">    <span class="keyword">SELECT</span> </span><br><span class="line">      drinks.<span class="string">`name`</span>, </span><br><span class="line">      <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> <span class="string">`total_quantity`</span> </span><br><span class="line">    <span class="keyword">FROM</span> orders</span><br><span class="line">    <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> drinks.<span class="string">`id`</span> = orders.<span class="string">`drink_id`</span></span><br><span class="line">    <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">    <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`total_quantity`</span> <span class="keyword">DESC</span></span><br><span class="line">  ) <span class="keyword">AS</span> a</span><br><span class="line">) <span class="keyword">AS</span> b;</span><br><span class="line">view rawrank.sql hosted <span class="keyword">with</span> ❤ <span class="keyword">by</span> GitHub</span><br></pre></td></tr></table></figure>
+<ol>
+<li>初始化<br>line 2：宣告 3 個使用者變數 <code>@prev, @curr, @rank</code>，分別儲存前值、當前值及名次，而變數的命名形式是 @變數名。</li>
+<li>從第三層非相關子查詢開始<br>line 17– 26 ： 由 orders 去 JOIN drinks，按 drink_id 分組，再由 SELECT 加總銷售量，最後降冪排序，表格別名取為 a 返回第二層。</li>
+<li>第二層子查詢<br>line 13：<code>@curr</code> 的值賦予給 <code>@prev</code><br>line 14：將第三層計算好的總銷售量 <code>a.total_quantity</code> 賦值給 <code>@curr</code><br>line 15：如果前值跟當前值不相等，則 <code>@rank</code> 加 1 再賦值給 <code>@rank</code></li>
+<li>第一層主查詢<br>重複 line 13 -15 直到所有紀錄 （records） 執行完畢。最後帶著 a 表格的全部欄位，取名為 b 奔回第一層，由 SELECT 篩選欄位。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>total_quantity</th>
+<th>rank</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>緋聞紅茶</td>
+<td>21</td>
+<td>1</td>
+</tr>
+<tr>
+<td>不熟紅茶</td>
+<td>21</td>
+<td>1</td>
+</tr>
+<tr>
+<td>雪花冷路</td>
+<td>20</td>
+<td>2</td>
+</tr>
+<tr>
+<td>中正路路</td>
+<td>12</td>
+<td>3</td>
+</tr>
+<tr>
+<td>莉莉紅茶</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>新芽紅茶</td>
+<td>2</td>
+<td>5</td>
+</tr>
+<tr>
+<td>春天冷路</td>
+<td>2</td>
+<td>5</td>
+</tr>
+<tr>
+<td>中山路咩</td>
+<td>1</td>
+<td>6</td>
+</tr>
+</tbody></table>
+<p>但結果跟預期的有點不太一樣。因為我預期的是當遇到 2 種飲料名次並列時，名次保持不變，但仍佔有位置，例如（1, 2, 2, 2, 5）而非（1, 2, 2, 2, 3）。如飲料查詢結果中的雪花冷路，它的名次應該是 3 才是。</p>
+<h1 id="有名次並列"><a href="#有名次並列" class="headerlink" title="有名次並列"></a>有名次並列</h1><p>為解決上述問題，額外再新增第 4 個變數 <code>@temp</code> 去記錄 loop 的次數，一但遇到並列，雖然名次不變，但紀錄次數仍持續加 1 ，直到沒有並列問題，再把 <code>@temp</code> 賦值給 @rank 修改後如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 宣告使用者變數及賦值</span></span><br><span class="line"><span class="keyword">SET</span> @prev = <span class="literal">null</span>, @curr = <span class="literal">null</span>, @<span class="keyword">rank</span> = <span class="number">0</span>, @temp = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  b.<span class="string">`name`</span>,</span><br><span class="line">  b.<span class="string">`total_quantity`</span>,</span><br><span class="line">  b.<span class="string">`rank`</span></span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="comment">-- 條件判斷名次</span></span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    a.*,</span><br><span class="line">  @temp := @temp + <span class="number">1</span>,</span><br><span class="line">  @prev := @curr,</span><br><span class="line">  @curr := a.<span class="string">`total_quantity`</span>,</span><br><span class="line">  @<span class="keyword">rank</span> := <span class="keyword">IF</span>(@prev = @curr, @<span class="keyword">rank</span>, @temp) <span class="keyword">AS</span> <span class="keyword">rank</span></span><br><span class="line">  <span class="keyword">FROM</span></span><br><span class="line">  (</span><br><span class="line">    <span class="comment">-- 子查詢計算總銷量</span></span><br><span class="line">    <span class="keyword">SELECT</span> </span><br><span class="line">      drinks.<span class="string">`name`</span>, </span><br><span class="line">      <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> <span class="string">`total_quantity`</span> </span><br><span class="line">    <span class="keyword">FROM</span> orders</span><br><span class="line">    <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> drinks.<span class="string">`id`</span> = orders.<span class="string">`drink_id`</span></span><br><span class="line">    <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">    <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`total_quantity`</span> <span class="keyword">DESC</span></span><br><span class="line">  ) <span class="keyword">AS</span> a</span><br><span class="line">) <span class="keyword">AS</span> b;</span><br></pre></td></tr></table></figure>
+
+<p>修改部分：<br>line 2 ：新增 <code>@temp</code> 變數<br>line 13：<code>@temp +=1</code><br>line 16：若兩者銷售量不相等，即沒有並列情形，則將 <code>@temp</code> 賦值給 <code>@rank</code></p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>total_quantity</th>
+<th>rank</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>緋聞紅茶</td>
+<td>21</td>
+<td>1</td>
+</tr>
+<tr>
+<td>不熟紅茶</td>
+<td>21</td>
+<td>1</td>
+</tr>
+<tr>
+<td>雪花冷路</td>
+<td>20</td>
+<td>3</td>
+</tr>
+<tr>
+<td>中正路路</td>
+<td>12</td>
+<td>4</td>
+</tr>
+<tr>
+<td>莉莉紅茶</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>新芽紅茶</td>
+<td>2</td>
+<td>6</td>
+</tr>
+<tr>
+<td>春天冷路</td>
+<td>2</td>
+<td>6</td>
+</tr>
+<tr>
+<td>中山路咩</td>
+<td>1</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<p>總算是正確顯示名次資訊了。</p>
+<h1 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h1><p>相較上一篇，本篇以另一種方式列出名次，利用宣告使用者變數及排序後的總銷售量資料表，逐筆針對前值及當前值做條件判斷，若相等，名次保持不變；若不等則名次加 1。然而考量到並列情形，須再宣告另一變數 temp 儲存 loop 的次數值，相等，名次依舊保持不變；不相等，紀錄次數賦值給名次，達成像（1, 2, 2, 4, 5）的期望名次顯示。</p>
+<p>值得一提的是，上述在開頭利用 SET 方式宣告並賦予初始值的使用者變數，其賦值運算子可以使用 = 或 := e.g. <code>SET @test := 1;</code></p>
+<p>而另一種賦值的方式常見於 SELECT e.g. <code>SELECT @test1, @test2 := 2;</code>，但只能用 := 作為賦值運算子。WHY？</p>
+<p>因為 = 出了 SET 這個語句之後，將被視為比較運算子而非賦值運算子。另外這樣的方式可能會於未來版本的 MySQL 中刪除，請注意。</p>
+<h1 id="參考"><a href="#參考" class="headerlink" title="參考"></a>參考</h1><p><a href="https://dev.mysql.com/doc/refman/8.0/en/user-variables.html" target="_blank" rel="noopener">MySQL DOCUMENTATION</a><br><a href="https://newaurora.pixnet.net/blog/post/221610377-mysql%e6%8e%92%e5%ba%8f%e5%90%8d%e6%ac%a1%e3%80%81%e6%8e%92%e8%a1%8c%28%e4%bd%bf%e7%94%a8sql%e8%aa%9e%e6%b3%95%e6%8e%92%e5%ba%8f%29" target="_blank" rel="noopener">MySQL排序名次、排行(使用SQL語法排序)</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/chenrohua24/2019/10/16/how-to-rank-in-mysql-1/" rel="prev" title="[MySQL] 如何排序名次 #1">
+      <i class="fa fa-chevron-left"></i> [MySQL] 如何排序名次 #1
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/chenrohua24/2019/10/23/use-xlsx-style/" rel="next" title="以 xlsx-style 處理 Excel 文件">
+      以 xlsx-style 處理 Excel 文件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#目標"><span class="nav-number">1.</span> <span class="nav-text">目標</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#無名次並列"><span class="nav-number">2.</span> <span class="nav-text">無名次並列</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#有名次並列"><span class="nav-number">3.</span> <span class="nav-text">有名次並列</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#結論"><span class="nav-number">4.</span> <span class="nav-text">結論</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#參考"><span class="nav-number">5.</span> <span class="nav-text">參考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ethan Huang"
+      src="/chenrohua24/./images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Ethan Huang</p>
+  <div class="site-description" itemprop="description">具現化系</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/chenrohua24/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HuangMinShi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HuangMinShi"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ethan Huang</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.2
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/chenrohua24/lib/anime.min.js"></script>
+  <script src="/chenrohua24/lib/velocity/velocity.min.js"></script>
+  <script src="/chenrohua24/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/chenrohua24/js/utils.js"></script>
+
+<script src="/chenrohua24/js/motion.js"></script>
+
+
+<script src="/chenrohua24/js/schemes/muse.js"></script>
+
+
+<script src="/chenrohua24/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
