@@ -11,23 +11,21 @@ open_graph:
 
 # Website's logo shown on the left of the navigation bar.
 # It can either be an url to an image or a string if the following option is set.
-# logo:
-#   text: <logo string>
 logo:
+  text: Ethan
+# logo:
 
 article:
   # Show word count and estimated reading time.
-  readtime: true
+  readtime: false
   # Code highlight theme, please see https://highlightjs.org/static/demo/
   highlight: atom-one-light
 
 # Navigation bar menu links.
 menu:
   Archives: /archives
-  # Lifestyle: /categories/LifeStyle
-  # Music: /categories/Music
-  # Technology: /categories/Technology
-  About: /about
+  # Categories: /categories
+  # About: /about
 
 # Search plugin settings.
 search:

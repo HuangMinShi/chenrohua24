@@ -254,13 +254,7 @@ hexo.extend.generator.register('tags', injectLanguages(function(languages, local
  */
 hexo.extend.generator.register('insight', injectLanguages(function(languages, locals) {
     function minify(str) {
-        return util.stripHTML(str).trim().replace(/\n/g, ' ').replace(/\s+/g, ' ')
-            .replace(/&#x([\da-fA-F]+);/g, (match, hex) => {
-                return String.fromCharCode(parseInt(hex, 16));
-            })
-            .replace(/&#([\d]+);/g, (match, dec) => {
-                return String.fromCharCode(dec);
-            });
+        return util.stripHTML(str).trim().replace(/\n/g, ' ').replace(/\s+/g, ' ');
     }
     function postMapper(post) {
         return {
