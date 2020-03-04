@@ -1,26 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="has-navbar-fixed-top">
 <head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 4.2.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/chenrohua24/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/chenrohua24/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/chenrohua24/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/chenrohua24/images/logo.svg" color="#222">
+    <meta charset="utf-8">
+<title>[MySQL] 如何排序名次 #1 - Ethan&#39;s learning notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-<link rel="stylesheet" href="/chenrohua24/css/main.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
 
 
-<link rel="stylesheet" href="/chenrohua24/lib/font-awesome/css/font-awesome.min.css">
 
-<script id="hexo-configurations">
-    var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"github.com","root":"/chenrohua24/","scheme":"Muse","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
-  </script>
 
-  <meta name="description" content="目標於 MySQL 中利用 SELF JOIN，並設定 ON 參考點的符合條件，正確排序飲料銷售量名次。">
+<meta name="description" content="具現化系">
+
+
+
+
+
+    <meta name="description" content="目標於 MySQL 中利用 SELF JOIN，並設定 ON 參考點的符合條件，正確排序飲料銷售量名次。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="[MySQL] 如何排序名次 #1">
 <meta property="og:url" content="https://github.com/HuangMinShi/chenrohua24/2019/10/16/how-to-rank-in-mysql-1/index.html">
@@ -28,179 +24,118 @@
 <meta property="og:description" content="目標於 MySQL 中利用 SELF JOIN，並設定 ON 參考點的符合條件，正確排序飲料銷售量名次。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2019-10-16T17:54:25.000Z">
-<meta property="article:modified_time" content="2020-03-03T13:21:22.137Z">
+<meta property="article:modified_time" content="2020-03-04T10:04:43.380Z">
 <meta property="article:author" content="Ethan Huang">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://github.com/HuangMinShi/chenrohua24/2019/10/16/how-to-rank-in-mysql-1/">
-
-
-<script id="page-configurations">
-  // https://hexo.io/docs/variables.html
-  CONFIG.page = {
-    sidebar: "",
-    isHome : false,
-    isPost : true
-  };
-</script>
-
-  <title>[MySQL] 如何排序名次 #1 | Ethan's learning notes</title>
-  
 
 
 
 
+<link rel="icon" href="/favicon.png">
 
 
-  <noscript>
-  <style>
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-header { opacity: initial; }
-
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
-
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage">
-  <div class="container use-motion">
-    <div class="headband"></div>
-
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar">
-      <span class="toggle-line toggle-line-first"></span>
-      <span class="toggle-line toggle-line-middle"></span>
-      <span class="toggle-line toggle-line-last"></span>
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <div>
-      <a href="/chenrohua24/" class="brand" rel="start">
-        <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Ethan's learning notes</span>
-        <span class="logo-line-after"><i></i></span>
-      </a>
-    </div>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger">
-    </div>
-  </div>
-</div>
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
 
 
-<nav class="site-nav">
-  
-  <ul id="menu" class="menu">
-        <li class="menu-item menu-item-home">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
 
-    <a href="/chenrohua24/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
-  </li>
-        <li class="menu-item menu-item-archives">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
 
-    <a href="/chenrohua24/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
 
-  </li>
-  </ul>
+<link rel="stylesheet" href="/chenrohua24/css/style.css">
 
-</nav>
-</div>
-    </header>
+
+
+
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
 
 
-    <main class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-
-          <div class="content">
-            
-
-  <div class="posts-expand">
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en">
-    <link itemprop="mainEntityOfPage" href="https://github.com/HuangMinShi/chenrohua24/2019/10/16/how-to-rank-in-mysql-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/chenrohua24/./images/avatar.jpg">
-      <meta itemprop="name" content="Ethan Huang">
-      <meta itemprop="description" content="具現化系">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ethan's learning notes">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          [MySQL] 如何排序名次 #1
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-10-16 17:54:25" itemprop="dateCreated datePublished" datetime="2019-10-16T17:54:25+00:00">2019-10-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-03 13:21:22" itemprop="dateModified" datetime="2020-03-03T13:21:22+00:00">2020-03-03</time>
-              </span>
-
-          
-
+<meta name="generator" content="Hexo 4.2.0"></head>
+<body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/chenrohua24/">
+                
+                    
+                    Ethan
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
-      </header>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item "
+               href="/chenrohua24/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            <a class="navbar-item search" title="Search" href="javascript:;">
+                <i class="fas fa-search"></i>
+            </a>
+            
+            
+            
+            <a class="navbar-item" target="_blank" title="GitHub" href="https://github.com/ppoffice/hexo-theme-minos">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
 
+    <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            [MySQL] 如何排序名次 #1
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-10-16T17:54:25.000Z" itemprop="datePublished">16 October 2019</time>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-        <h1 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h1><p>於 MySQL 中利用 SELF JOIN，並設定 ON 參考點的符合條件，正確排序飲料銷售量名次。</p>
+        <html><head></head><body><h1 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h1><p>於 MySQL 中利用 SELF JOIN，並設定 ON 參考點的符合條件，正確排序飲料銷售量名次。</p>
 <a id="more"></a>
 
 <h1 id="情境"><a href="#情境" class="headerlink" title="情境"></a>情境</h1><p>回顧自己在 AC 學期三 MySQL 伺服器上學習 SQL 語法時，遇到一個實境章節是建立飲料店的資料庫，在此簡單假設有飲料及訂單 2 張資料表，飲料有編號（id）、名稱（name）及價格欄位（price），訂單則有編號（id）、銷售量（quantity）及飲料編號（drink_id）。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">drinks : id, name, price</span><br><span class="line">orders : id, quantity, drink_id</span><br></pre></td></tr></table></figure>
-
+<p></p><figure class="highlight sql hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">drinks : id, name, price</span><br><span class="line">orders : id, quantity, drink_id</span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>現在想像飲料店老闆想知道目前銷售量最高的飲料是哪一種？身為最有效率員工的你並沒有想的太多，很快查詢出銷售量最高的飲料就是緋聞紅茶。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">  drinks.<span class="string">`name`</span>, </span><br><span class="line">  <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> <span class="string">`total_quantity`</span></span><br><span class="line"><span class="keyword">FROM</span> orders</span><br><span class="line"><span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`total_quantity`</span> <span class="keyword">DESC</span></span><br><span class="line"><span class="keyword">LIMIT</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-
+<p></p><figure class="highlight sql hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">SELECT</span> </span><br><span class="line">  drinks.<span class="hljs-string">`name`</span>, </span><br><span class="line">  <span class="hljs-keyword">SUM</span>(<span class="hljs-string">`quantity`</span>) <span class="hljs-keyword">AS</span> <span class="hljs-string">`total_quantity`</span></span><br><span class="line"><span class="hljs-keyword">FROM</span> orders</span><br><span class="line"><span class="hljs-keyword">JOIN</span> drinks <span class="hljs-keyword">ON</span> orders.<span class="hljs-string">`drink_id`</span> = drinks.<span class="hljs-string">`id`</span></span><br><span class="line"><span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`drink_id`</span></span><br><span class="line"><span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`total_quantity`</span> <span class="hljs-keyword">DESC</span></span><br><span class="line"><span class="hljs-keyword">LIMIT</span> <span class="hljs-number">1</span>;</span><br></pre></td></tr></tbody></table></figure><p></p>
 <table>
 <thead>
 <tr>
@@ -317,8 +252,7 @@
 <li>從 a 資料表的角度思考，其參考點設為 b.total_quantity 大於等於 a.total_quantity，意思是誰的銷售量大於等於我。</li>
 <li>一樣是站在 a 資料表的角度，去計算大於等於 a.total_quantity 的個數當作排名的欄位。</li>
 </ol>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  a.<span class="string">`name`</span>, </span><br><span class="line">  a.<span class="string">`total_quantity`</span>, </span><br><span class="line">  <span class="keyword">COUNT</span>(b.<span class="string">`total_quantity`</span>) <span class="keyword">AS</span> <span class="keyword">rank</span></span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="string">`name`</span>, </span><br><span class="line">    <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> total_quantity</span><br><span class="line">  <span class="keyword">FROM</span> orders </span><br><span class="line">  <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line">  <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">  <span class="keyword">ORDER</span> <span class="keyword">BY</span> total_quantity <span class="keyword">DESC</span></span><br><span class="line">) <span class="keyword">AS</span> a</span><br><span class="line"><span class="keyword">JOIN</span> </span><br><span class="line">(</span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="string">`name`</span>, </span><br><span class="line">    <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> total_quantity</span><br><span class="line">  <span class="keyword">FROM</span> orders </span><br><span class="line">  <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line">  <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">  <span class="keyword">ORDER</span> <span class="keyword">BY</span> total_quantity <span class="keyword">DESC</span></span><br><span class="line">) <span class="keyword">AS</span> b</span><br><span class="line"><span class="keyword">ON</span> a.<span class="string">`total_quantity`</span> &lt;= b.<span class="string">`total_quantity`</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> a.<span class="string">`name`</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> a.<span class="string">`total_quantity`</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
-
+<p></p><figure class="highlight sql hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">SELECT</span></span><br><span class="line">  a.<span class="hljs-string">`name`</span>, </span><br><span class="line">  a.<span class="hljs-string">`total_quantity`</span>, </span><br><span class="line">  <span class="hljs-keyword">COUNT</span>(b.<span class="hljs-string">`total_quantity`</span>) <span class="hljs-keyword">AS</span> <span class="hljs-keyword">rank</span></span><br><span class="line"><span class="hljs-keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="hljs-keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="hljs-string">`name`</span>, </span><br><span class="line">    <span class="hljs-keyword">SUM</span>(<span class="hljs-string">`quantity`</span>) <span class="hljs-keyword">AS</span> total_quantity</span><br><span class="line">  <span class="hljs-keyword">FROM</span> orders </span><br><span class="line">  <span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">JOIN</span> drinks <span class="hljs-keyword">ON</span> orders.<span class="hljs-string">`drink_id`</span> = drinks.<span class="hljs-string">`id`</span></span><br><span class="line">  <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`drink_id`</span></span><br><span class="line">  <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> total_quantity <span class="hljs-keyword">DESC</span></span><br><span class="line">) <span class="hljs-keyword">AS</span> a</span><br><span class="line"><span class="hljs-keyword">JOIN</span> </span><br><span class="line">(</span><br><span class="line">  <span class="hljs-keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="hljs-string">`name`</span>, </span><br><span class="line">    <span class="hljs-keyword">SUM</span>(<span class="hljs-string">`quantity`</span>) <span class="hljs-keyword">AS</span> total_quantity</span><br><span class="line">  <span class="hljs-keyword">FROM</span> orders </span><br><span class="line">  <span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">JOIN</span> drinks <span class="hljs-keyword">ON</span> orders.<span class="hljs-string">`drink_id`</span> = drinks.<span class="hljs-string">`id`</span></span><br><span class="line">  <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`drink_id`</span></span><br><span class="line">  <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> total_quantity <span class="hljs-keyword">DESC</span></span><br><span class="line">) <span class="hljs-keyword">AS</span> b</span><br><span class="line"><span class="hljs-keyword">ON</span> a.<span class="hljs-string">`total_quantity`</span> <= b.<span class="hljs-string">`total_quantity`</span></span><br><span class="line"><span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> a.<span class="hljs-string">`name`</span></span><br><span class="line"><span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> a.<span class="hljs-string">`total_quantity`</span> <span class="hljs-keyword">DESC</span>;</span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>接下來，就是見證奇蹟的時刻了。</p>
 <table>
 <thead>
@@ -375,8 +309,7 @@
 <h1 id="再解決"><a href="#再解決" class="headerlink" title="再解決"></a>再解決</h1><p>此刻一股無力感從腳底、從背脊、從頭頂開始慢慢侵蝕著你，<br>但你仍故作鎮定，再次進行沙盤推演。</p>
 <p>緋聞紅茶，誰的銷售量大於等於緋聞紅茶？不熟紅茶及它自己，計數 2。<br>不熟紅茶，誰的銷售量大於等於不熟紅茶？緋聞紅茶及它自己，計數 2。<br>雪花冷路，誰的銷售量大於等於雪花冷路？緋聞、不熟及它自己，計數 3。</p>
 <p>瞬間你心裡阿了一聲，彷彿看見一道光。原來緋聞紅茶及不熟紅茶本該是並列第 1 ，但他們把對方視為己出，算進自己的計數之中，所以只要將銷售量相等的對方踢出自己的計數，並保留銷售量一樣的自己，這樣一來，便能同時並列第 1。修改 line 25 ON 之後的條件並新增 line 26 如下。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">  a.<span class="string">`name`</span>, </span><br><span class="line">  a.<span class="string">`total_quantity`</span>, </span><br><span class="line">  <span class="keyword">COUNT</span>(b.<span class="string">`total_quantity`</span>) <span class="keyword">AS</span> <span class="keyword">rank</span></span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="string">`name`</span>, </span><br><span class="line">    <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> total_quantity</span><br><span class="line">  <span class="keyword">FROM</span> orders </span><br><span class="line">  <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line">  <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">  <span class="keyword">ORDER</span> <span class="keyword">BY</span> total_quantity <span class="keyword">DESC</span></span><br><span class="line">) <span class="keyword">AS</span> a</span><br><span class="line"><span class="keyword">JOIN</span> </span><br><span class="line">(</span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="string">`name`</span>, </span><br><span class="line">    <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> total_quantity</span><br><span class="line">  <span class="keyword">FROM</span> orders </span><br><span class="line">  <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> orders.<span class="string">`drink_id`</span> = drinks.<span class="string">`id`</span></span><br><span class="line">  <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">  <span class="keyword">ORDER</span> <span class="keyword">BY</span> total_quantity <span class="keyword">DESC</span></span><br><span class="line">) <span class="keyword">AS</span> b</span><br><span class="line"><span class="keyword">ON</span> a.<span class="string">`total_quantity`</span> &lt; b.<span class="string">`total_quantity`</span></span><br><span class="line"><span class="keyword">OR</span> (a.<span class="string">`total_quantity`</span> = b.<span class="string">`total_quantity`</span> <span class="keyword">AND</span> a.<span class="string">`name`</span> = b.<span class="string">`name`</span>)</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> a.<span class="string">`name`</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> a.<span class="string">`total_quantity`</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
-<p>再來一次<br>緋聞紅茶，誰的銷售量大於緋聞紅茶？沒有，但請算進自己，計數 1。<br>不熟紅茶，誰的銷售量大於不熟紅茶？沒有，但請算進自己，計數 1。<br>雪花冷路，誰的銷售量大於雪花冷路？緋聞、不熟，再加自己，計數 3。</p>
+<p></p><figure class="highlight sql hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">SELECT</span> </span><br><span class="line">  a.<span class="hljs-string">`name`</span>, </span><br><span class="line">  a.<span class="hljs-string">`total_quantity`</span>, </span><br><span class="line">  <span class="hljs-keyword">COUNT</span>(b.<span class="hljs-string">`total_quantity`</span>) <span class="hljs-keyword">AS</span> <span class="hljs-keyword">rank</span></span><br><span class="line"><span class="hljs-keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="hljs-keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="hljs-string">`name`</span>, </span><br><span class="line">    <span class="hljs-keyword">SUM</span>(<span class="hljs-string">`quantity`</span>) <span class="hljs-keyword">AS</span> total_quantity</span><br><span class="line">  <span class="hljs-keyword">FROM</span> orders </span><br><span class="line">  <span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">JOIN</span> drinks <span class="hljs-keyword">ON</span> orders.<span class="hljs-string">`drink_id`</span> = drinks.<span class="hljs-string">`id`</span></span><br><span class="line">  <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`drink_id`</span></span><br><span class="line">  <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> total_quantity <span class="hljs-keyword">DESC</span></span><br><span class="line">) <span class="hljs-keyword">AS</span> a</span><br><span class="line"><span class="hljs-keyword">JOIN</span> </span><br><span class="line">(</span><br><span class="line">  <span class="hljs-keyword">SELECT</span> </span><br><span class="line">    drinks.<span class="hljs-string">`name`</span>, </span><br><span class="line">    <span class="hljs-keyword">SUM</span>(<span class="hljs-string">`quantity`</span>) <span class="hljs-keyword">AS</span> total_quantity</span><br><span class="line">  <span class="hljs-keyword">FROM</span> orders </span><br><span class="line">  <span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">JOIN</span> drinks <span class="hljs-keyword">ON</span> orders.<span class="hljs-string">`drink_id`</span> = drinks.<span class="hljs-string">`id`</span></span><br><span class="line">  <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`drink_id`</span></span><br><span class="line">  <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> total_quantity <span class="hljs-keyword">DESC</span></span><br><span class="line">) <span class="hljs-keyword">AS</span> b</span><br><span class="line"><span class="hljs-keyword">ON</span> a.<span class="hljs-string">`total_quantity`</span> < b.<span class="hljs-string">`total_quantity`</span></span><br><span class="line"><span class="hljs-keyword">OR</span> (a.<span class="hljs-string">`total_quantity`</span> = b.<span class="hljs-string">`total_quantity`</span> <span class="hljs-keyword">AND</span> a.<span class="hljs-string">`name`</span> = b.<span class="hljs-string">`name`</span>)</span><br><span class="line"><span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> a.<span class="hljs-string">`name`</span></span><br><span class="line"><span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> a.<span class="hljs-string">`total_quantity`</span> <span class="hljs-keyword">DESC</span>;</span><br></pre></td></tr></tbody></table></figure><br>再來一次<br>緋聞紅茶，誰的銷售量大於緋聞紅茶？沒有，但請算進自己，計數 1。<br>不熟紅茶，誰的銷售量大於不熟紅茶？沒有，但請算進自己，計數 1。<br>雪花冷路，誰的銷售量大於雪花冷路？緋聞、不熟，再加自己，計數 3。<p></p>
 <p>看看結果如何。</p>
 <table>
 <thead>
@@ -434,194 +367,235 @@
 <p>不是吧！</p>
 <p>因為 SELF JOIN 需要重複寫 2 次子查詢，在目前了解 SQL的範圍內，這樣的寫法對後續維護是不難，但總是感到不夠完美及盡興。</p>
 <p>所以我利用 Google 搜尋同樣的問題，發現了更簡短的寫法，不過需要額外的運算子幫忙，詳情請接下一篇。這裡簡略敘述一下，主要是使用 User variables 及 IF 的條件判斷式，程序則是讓子查詢做完 SUM( quantity ) 後丟上來作條件判斷並儲存名次，判斷完再往上丟到最外層去篩選欄位，算是相對易懂的方式。</p>
-<p>最後總結本篇於 MySQL 學習 SQL 的過程，目標是正確查詢飲料店資料庫中銷售量最高的飲料，首先利用同學分數的簡單例子做名次的推導，了解名次產生的方式之後，回到飲料店的情境，以 SELF JOIN 於同一張資料表做銷售量的比對，最後針對名次並列顯示的問題，微微地調整了 ON 的條件敘述，成功地完成排序名次的目標。<br><br/></p>
+<p>最後總結本篇於 MySQL 學習 SQL 的過程，目標是正確查詢飲料店資料庫中銷售量最高的飲料，首先利用同學分數的簡單例子做名次的推導，了解名次產生的方式之後，回到飲料店的情境，以 SELF JOIN 於同一張資料表做銷售量的比對，最後針對名次並列顯示的問題，微微地調整了 ON 的條件敘述，成功地完成排序名次的目標。<br><br></p>
+</body></html>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/chenrohua24/2019/10/17/how-to-rank-in-mysql-2/">[MySQL] 如何排序名次 #2</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop is-hidden-mobile article-nav-next">
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
 
     </div>
+</section>
+    <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Ethan Huang&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a
+                        href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
 
-    
-    
-    
-
-      <footer class="post-footer">
-
-        
-
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item"></div>
-      <div class="post-nav-item">
-    <a href="/chenrohua24/2019/10/17/how-to-rank-in-mysql-2/" rel="next" title="[MySQL] 如何排序名次 #2">
-      [MySQL] 如何排序名次 #2 <i class="fa fa-chevron-right"></i>
-    </a></div>
+            
+            <div class="column is-narrow">
+                <div class="columns is-mobile is-multiline is-centered">
+                
+                    
+                <a class="column is-narrow has-text-black" title="GitHub" href="https://github.com/ppoffice/hexo-theme-minos">
+                    
+                    GitHub
+                    
+                </a>
+                
+                </div>
+            </div>
+            
+            
+        </div>
     </div>
-      </footer>
-    
-  </article>
-  
-  
-  
+</footer>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
 
-  </div>
-
-
-          </div>
-          
-
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/" target="_blank" rel="noopener">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
 <script>
-  window.addEventListener('tabs:register', () => {
-    let activeClass = CONFIG.comments.activeClass;
-    if (CONFIG.comments.storage) {
-      activeClass = localStorage.getItem('comments_active') || activeClass;
-    }
-    if (activeClass) {
-      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
-      if (activeTab) {
-        activeTab.click();
-      }
-    }
-  });
-  if (CONFIG.comments.storage) {
-    window.addEventListener('tabs:click', event => {
-      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
-      let commentClass = event.target.classList[1];
-      localStorage.setItem('comments_active', commentClass);
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
     });
-  }
 </script>
 
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {
+            matchFontHeight: false
+        },
+        SVG: {
+            matchFontHeight: false
+        },
+        CommonHTML: {
+            matchFontHeight: false
+        },
+        tex2jax: {
+            inlineMath: [
+                ['$','$'],
+                ['\\(','\\)']
+            ]
+        }
+    });
+</script>
+
+    
+    
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+    <style>
+        .hljs {
+            position: relative;
+        }
+
+        .hljs .clipboard-btn {
+            float: right;
+            color: #9a9a9a;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .hljs .clipboard-btn:hover {
+          color: #8a8a8a;
+        }
+
+        .hljs > .clipboard-btn {
+            display: none;
+            position: absolute;
+            right: 4px;
+            top: 4px;
+        }
+
+        .hljs:hover > .clipboard-btn {
+            display: inline;
+        }
+
+        .hljs > figcaption > .clipboard-btn {
+            margin-right: 4px;
+        }
+    </style>
+    <script>
+      $(document).ready(function () {
+        $('figure.hljs').each(function(i, figure) {
+          var codeId = 'code-' + i;
+          var code = figure.querySelector('.code');
+          var copyButton = $('<button>Copy <i class="far fa-clipboard"></i></button>');
+          code.id = codeId;
+          copyButton.addClass('clipboard-btn');
+          copyButton.attr('data-clipboard-target-id', codeId);
+
+          var figcaption = figure.querySelector('figcaption');
+
+          if (figcaption) {
+            figcaption.append(copyButton[0]);
+          } else {
+            figure.prepend(copyButton[0]);
+          }
+        })
+
+        var clipboard = new ClipboardJS('.clipboard-btn', {
+          target: function(trigger) {
+            return document.getElementById(trigger.getAttribute('data-clipboard-target-id'));
+          }
+        });
+        clipboard.on('success', function(e) {
+          e.clearSelection();
+        })
+      })
+    </script>
+
+    
+    
+
+    
+
+
+
+<script src="/chenrohua24/js/script.js"></script>
+
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-mask"></div>
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="Type something..." />
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
         </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line toggle-line-first"></span>
-    <span class="toggle-line toggle-line-middle"></span>
-    <span class="toggle-line toggle-line-last"></span>
-  </div>
-
-  <aside class="sidebar">
-    <div class="sidebar-inner">
-
-      <ul class="sidebar-nav motion-element">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <!--noindex-->
-      <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#目標"><span class="nav-number">1.</span> <span class="nav-text">目標</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#情境"><span class="nav-number">2.</span> <span class="nav-text">情境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#問題"><span class="nav-number">3.</span> <span class="nav-text">問題</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解決"><span class="nav-number">4.</span> <span class="nav-text">解決</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#再解決"><span class="nav-number">5.</span> <span class="nav-text">再解決</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#結論"><span class="nav-number">6.</span> <span class="nav-text">結論</span></a></li></ol></div>
-      </div>
-      <!--/noindex-->
-
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <img class="site-author-image" itemprop="image" alt="Ethan Huang"
-      src="/chenrohua24/./images/avatar.jpg">
-  <p class="site-author-name" itemprop="name">Ethan Huang</p>
-  <div class="site-description" itemprop="description">具現化系</div>
-</div>
-<div class="site-state-wrap motion-element">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-          <a href="/chenrohua24/archives/">
-        
-          <span class="site-state-item-count">4</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author motion-element">
-      <span class="links-of-author-item">
-        <a href="https://github.com/HuangMinShi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HuangMinShi"><i class="fa fa-fw fa-github"></i>GitHub</a>
-      </span>
-  </div>
-
-
-
-      </div>
-
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
     </div>
-  </aside>
-  <div id="sidebar-dimmer"></div>
-
-
-      </div>
-    </main>
-
-    <footer class="footer">
-      <div class="footer-inner">
-        
-
-<div class="copyright">
-  
-  &copy; 
-  <span itemprop="copyrightYear">2020</span>
-  <span class="with-love">
-    <i class="fa fa-user"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">Ethan Huang</span>
 </div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
-  </div>
-  <span class="post-meta-divider">|</span>
-  <div class="theme-info">Theme – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.2
-  </div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: 'Posts',
+                PAGES: 'Pages',
+                CATEGORIES: 'Categories',
+                TAGS: 'Tags',
+                UNTITLED: '(Untitled)',
+            },
+            CONTENT_URL: '/chenrohua24/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
 
-        
+<script src="/chenrohua24/js/insight.js"></script>
 
-
-
-
-
-
-
-
-      </div>
-    </footer>
-  </div>
-
-  
-  <script src="/chenrohua24/lib/anime.min.js"></script>
-  <script src="/chenrohua24/lib/velocity/velocity.min.js"></script>
-  <script src="/chenrohua24/lib/velocity/velocity.ui.min.js"></script>
-
-<script src="/chenrohua24/js/utils.js"></script>
-
-<script src="/chenrohua24/js/motion.js"></script>
-
-
-<script src="/chenrohua24/js/schemes/muse.js"></script>
-
-
-<script src="/chenrohua24/js/next-boot.js"></script>
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-  
-
+    
 </body>
 </html>

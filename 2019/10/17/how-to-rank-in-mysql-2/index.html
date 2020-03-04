@@ -1,26 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="has-navbar-fixed-top">
 <head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 4.2.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/chenrohua24/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/chenrohua24/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/chenrohua24/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/chenrohua24/images/logo.svg" color="#222">
+    <meta charset="utf-8">
+<title>[MySQL] 如何排序名次 #2 - Ethan&#39;s learning notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-<link rel="stylesheet" href="/chenrohua24/css/main.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
 
 
-<link rel="stylesheet" href="/chenrohua24/lib/font-awesome/css/font-awesome.min.css">
 
-<script id="hexo-configurations">
-    var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"github.com","root":"/chenrohua24/","scheme":"Muse","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
-  </script>
 
-  <meta name="description" content="目標於 MySQL 中宣告使用者變數 、利用 IF 條件判斷並考量名次並列情形，正確排序飲料銷售量名次。">
+<meta name="description" content="具現化系">
+
+
+
+
+
+    <meta name="description" content="目標於 MySQL 中宣告使用者變數 、利用 IF 條件判斷並考量名次並列情形，正確排序飲料銷售量名次。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="[MySQL] 如何排序名次 #2">
 <meta property="og:url" content="https://github.com/HuangMinShi/chenrohua24/2019/10/17/how-to-rank-in-mysql-2/index.html">
@@ -28,178 +24,118 @@
 <meta property="og:description" content="目標於 MySQL 中宣告使用者變數 、利用 IF 條件判斷並考量名次並列情形，正確排序飲料銷售量名次。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2019-10-17T17:54:25.000Z">
-<meta property="article:modified_time" content="2020-03-03T13:21:22.137Z">
+<meta property="article:modified_time" content="2020-03-04T10:04:43.380Z">
 <meta property="article:author" content="Ethan Huang">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://github.com/HuangMinShi/chenrohua24/2019/10/17/how-to-rank-in-mysql-2/">
-
-
-<script id="page-configurations">
-  // https://hexo.io/docs/variables.html
-  CONFIG.page = {
-    sidebar: "",
-    isHome : false,
-    isPost : true
-  };
-</script>
-
-  <title>[MySQL] 如何排序名次 #2 | Ethan's learning notes</title>
-  
 
 
 
 
+<link rel="icon" href="/favicon.png">
 
 
-  <noscript>
-  <style>
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-header { opacity: initial; }
-
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
-
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage">
-  <div class="container use-motion">
-    <div class="headband"></div>
-
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar">
-      <span class="toggle-line toggle-line-first"></span>
-      <span class="toggle-line toggle-line-middle"></span>
-      <span class="toggle-line toggle-line-last"></span>
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <div>
-      <a href="/chenrohua24/" class="brand" rel="start">
-        <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Ethan's learning notes</span>
-        <span class="logo-line-after"><i></i></span>
-      </a>
-    </div>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger">
-    </div>
-  </div>
-</div>
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
 
 
-<nav class="site-nav">
-  
-  <ul id="menu" class="menu">
-        <li class="menu-item menu-item-home">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
 
-    <a href="/chenrohua24/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
-  </li>
-        <li class="menu-item menu-item-archives">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
 
-    <a href="/chenrohua24/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
 
-  </li>
-  </ul>
+<link rel="stylesheet" href="/chenrohua24/css/style.css">
 
-</nav>
-</div>
-    </header>
+
+
+
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
 
 
-    <main class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-
-          <div class="content">
-            
-
-  <div class="posts-expand">
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en">
-    <link itemprop="mainEntityOfPage" href="https://github.com/HuangMinShi/chenrohua24/2019/10/17/how-to-rank-in-mysql-2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/chenrohua24/./images/avatar.jpg">
-      <meta itemprop="name" content="Ethan Huang">
-      <meta itemprop="description" content="具現化系">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ethan's learning notes">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          [MySQL] 如何排序名次 #2
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-10-17 17:54:25" itemprop="dateCreated datePublished" datetime="2019-10-17T17:54:25+00:00">2019-10-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-03 13:21:22" itemprop="dateModified" datetime="2020-03-03T13:21:22+00:00">2020-03-03</time>
-              </span>
-
-          
-
+<meta name="generator" content="Hexo 4.2.0"></head>
+<body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/chenrohua24/">
+                
+                    
+                    Ethan
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
-      </header>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item "
+               href="/chenrohua24/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            <a class="navbar-item search" title="Search" href="javascript:;">
+                <i class="fas fa-search"></i>
+            </a>
+            
+            
+            
+            <a class="navbar-item" target="_blank" title="GitHub" href="https://github.com/ppoffice/hexo-theme-minos">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
 
+    <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            [MySQL] 如何排序名次 #2
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-10-17T17:54:25.000Z" itemprop="datePublished">17 October 2019</time>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-        <h1 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h1><p>於 MySQL 中宣告使用者變數 、利用 IF 條件判斷並考量名次並列情形，正確排序飲料銷售量名次。</p>
+        <html><head></head><body><h1 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h1><p>於 MySQL 中宣告使用者變數 、利用 IF 條件判斷並考量名次並列情形，正確排序飲料銷售量名次。</p>
 <a id="more"></a>
 
 <h1 id="無名次並列"><a href="#無名次並列" class="headerlink" title="無名次並列"></a>無名次並列</h1><p>延續上一篇的情境，一樣假設有飲料及訂單 2 張資料表，定義欄位如下 ：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">drinks : id, name, price</span><br><span class="line">orders : id, quantity, drink_id</span><br></pre></td></tr></table></figure>
-
+<p></p><figure class="highlight sql hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">drinks : id, name, price</span><br><span class="line">orders : id, quantity, drink_id</span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>想知道哪種飲料銷售量最高？SQL 語法如下：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 宣告使用者變數及賦值</span></span><br><span class="line"><span class="keyword">SET</span> @prev = <span class="literal">null</span>, @curr = <span class="literal">null</span>, @<span class="keyword">rank</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  b.<span class="string">`name`</span>,</span><br><span class="line">  b.<span class="string">`total_quantity`</span>,</span><br><span class="line">  b.<span class="string">`rank`</span></span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="comment">-- 條件判斷名次</span></span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    a.*,</span><br><span class="line">  @prev := @curr,</span><br><span class="line">  @curr := a.<span class="string">`total_quantity`</span>,</span><br><span class="line">  @<span class="keyword">rank</span> := <span class="keyword">IF</span>(@prev = @curr, @<span class="keyword">rank</span>, @<span class="keyword">rank</span> + <span class="number">1</span>) <span class="keyword">AS</span> <span class="keyword">rank</span></span><br><span class="line">  <span class="keyword">FROM</span></span><br><span class="line">  (</span><br><span class="line">    <span class="comment">-- 子查詢計算總銷量</span></span><br><span class="line">    <span class="keyword">SELECT</span> </span><br><span class="line">      drinks.<span class="string">`name`</span>, </span><br><span class="line">      <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> <span class="string">`total_quantity`</span> </span><br><span class="line">    <span class="keyword">FROM</span> orders</span><br><span class="line">    <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> drinks.<span class="string">`id`</span> = orders.<span class="string">`drink_id`</span></span><br><span class="line">    <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">    <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`total_quantity`</span> <span class="keyword">DESC</span></span><br><span class="line">  ) <span class="keyword">AS</span> a</span><br><span class="line">) <span class="keyword">AS</span> b;</span><br><span class="line">view rawrank.sql hosted <span class="keyword">with</span> ❤ <span class="keyword">by</span> GitHub</span><br></pre></td></tr></table></figure>
+<p></p><figure class="highlight sql hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">-- 宣告使用者變數及賦值</span></span><br><span class="line"><span class="hljs-keyword">SET</span> @prev = <span class="hljs-literal">null</span>, @curr = <span class="hljs-literal">null</span>, @<span class="hljs-keyword">rank</span> = <span class="hljs-number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="hljs-keyword">SELECT</span></span><br><span class="line">  b.<span class="hljs-string">`name`</span>,</span><br><span class="line">  b.<span class="hljs-string">`total_quantity`</span>,</span><br><span class="line">  b.<span class="hljs-string">`rank`</span></span><br><span class="line"><span class="hljs-keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="hljs-comment">-- 條件判斷名次</span></span><br><span class="line">  <span class="hljs-keyword">SELECT</span> </span><br><span class="line">    a.*,</span><br><span class="line">  @prev := @curr,</span><br><span class="line">  @curr := a.<span class="hljs-string">`total_quantity`</span>,</span><br><span class="line">  @<span class="hljs-keyword">rank</span> := <span class="hljs-keyword">IF</span>(@prev = @curr, @<span class="hljs-keyword">rank</span>, @<span class="hljs-keyword">rank</span> + <span class="hljs-number">1</span>) <span class="hljs-keyword">AS</span> <span class="hljs-keyword">rank</span></span><br><span class="line">  <span class="hljs-keyword">FROM</span></span><br><span class="line">  (</span><br><span class="line">    <span class="hljs-comment">-- 子查詢計算總銷量</span></span><br><span class="line">    <span class="hljs-keyword">SELECT</span> </span><br><span class="line">      drinks.<span class="hljs-string">`name`</span>, </span><br><span class="line">      <span class="hljs-keyword">SUM</span>(<span class="hljs-string">`quantity`</span>) <span class="hljs-keyword">AS</span> <span class="hljs-string">`total_quantity`</span> </span><br><span class="line">    <span class="hljs-keyword">FROM</span> orders</span><br><span class="line">    <span class="hljs-keyword">JOIN</span> drinks <span class="hljs-keyword">ON</span> drinks.<span class="hljs-string">`id`</span> = orders.<span class="hljs-string">`drink_id`</span></span><br><span class="line">    <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`drink_id`</span></span><br><span class="line">    <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`total_quantity`</span> <span class="hljs-keyword">DESC</span></span><br><span class="line">  ) <span class="hljs-keyword">AS</span> a</span><br><span class="line">) <span class="hljs-keyword">AS</span> b;</span><br><span class="line">view rawrank.sql hosted <span class="hljs-keyword">with</span> ❤ <span class="hljs-keyword">by</span> GitHub</span><br></pre></td></tr></tbody></table></figure><p></p>
 <ol>
 <li>初始化<br>line 2：宣告 3 個使用者變數 <code>@prev, @curr, @rank</code>，分別儲存前值、當前值及名次，而變數的命名形式是 @變數名。</li>
 <li>從第三層非相關子查詢開始<br>line 17– 26 ： 由 orders 去 JOIN drinks，按 drink_id 分組，再由 SELECT 加總銷售量，最後降冪排序，表格別名取為 a 返回第二層。</li>
@@ -257,8 +193,7 @@
 </tbody></table>
 <p>但結果跟預期的有點不太一樣。因為我預期的是當遇到 2 種飲料名次並列時，名次保持不變，但仍佔有位置，例如（1, 2, 2, 2, 5）而非（1, 2, 2, 2, 3）。如飲料查詢結果中的雪花冷路，它的名次應該是 3 才是。</p>
 <h1 id="有名次並列"><a href="#有名次並列" class="headerlink" title="有名次並列"></a>有名次並列</h1><p>為解決上述問題，額外再新增第 4 個變數 <code>@temp</code> 去記錄 loop 的次數，一但遇到並列，雖然名次不變，但紀錄次數仍持續加 1 ，直到沒有並列問題，再把 <code>@temp</code> 賦值給 @rank 修改後如下：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 宣告使用者變數及賦值</span></span><br><span class="line"><span class="keyword">SET</span> @prev = <span class="literal">null</span>, @curr = <span class="literal">null</span>, @<span class="keyword">rank</span> = <span class="number">0</span>, @temp = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  b.<span class="string">`name`</span>,</span><br><span class="line">  b.<span class="string">`total_quantity`</span>,</span><br><span class="line">  b.<span class="string">`rank`</span></span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="comment">-- 條件判斷名次</span></span><br><span class="line">  <span class="keyword">SELECT</span> </span><br><span class="line">    a.*,</span><br><span class="line">  @temp := @temp + <span class="number">1</span>,</span><br><span class="line">  @prev := @curr,</span><br><span class="line">  @curr := a.<span class="string">`total_quantity`</span>,</span><br><span class="line">  @<span class="keyword">rank</span> := <span class="keyword">IF</span>(@prev = @curr, @<span class="keyword">rank</span>, @temp) <span class="keyword">AS</span> <span class="keyword">rank</span></span><br><span class="line">  <span class="keyword">FROM</span></span><br><span class="line">  (</span><br><span class="line">    <span class="comment">-- 子查詢計算總銷量</span></span><br><span class="line">    <span class="keyword">SELECT</span> </span><br><span class="line">      drinks.<span class="string">`name`</span>, </span><br><span class="line">      <span class="keyword">SUM</span>(<span class="string">`quantity`</span>) <span class="keyword">AS</span> <span class="string">`total_quantity`</span> </span><br><span class="line">    <span class="keyword">FROM</span> orders</span><br><span class="line">    <span class="keyword">JOIN</span> drinks <span class="keyword">ON</span> drinks.<span class="string">`id`</span> = orders.<span class="string">`drink_id`</span></span><br><span class="line">    <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="string">`drink_id`</span></span><br><span class="line">    <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`total_quantity`</span> <span class="keyword">DESC</span></span><br><span class="line">  ) <span class="keyword">AS</span> a</span><br><span class="line">) <span class="keyword">AS</span> b;</span><br></pre></td></tr></table></figure>
-
+<p></p><figure class="highlight sql hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">-- 宣告使用者變數及賦值</span></span><br><span class="line"><span class="hljs-keyword">SET</span> @prev = <span class="hljs-literal">null</span>, @curr = <span class="hljs-literal">null</span>, @<span class="hljs-keyword">rank</span> = <span class="hljs-number">0</span>, @temp = <span class="hljs-number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="hljs-keyword">SELECT</span></span><br><span class="line">  b.<span class="hljs-string">`name`</span>,</span><br><span class="line">  b.<span class="hljs-string">`total_quantity`</span>,</span><br><span class="line">  b.<span class="hljs-string">`rank`</span></span><br><span class="line"><span class="hljs-keyword">FROM</span> </span><br><span class="line">(</span><br><span class="line">  <span class="hljs-comment">-- 條件判斷名次</span></span><br><span class="line">  <span class="hljs-keyword">SELECT</span> </span><br><span class="line">    a.*,</span><br><span class="line">  @temp := @temp + <span class="hljs-number">1</span>,</span><br><span class="line">  @prev := @curr,</span><br><span class="line">  @curr := a.<span class="hljs-string">`total_quantity`</span>,</span><br><span class="line">  @<span class="hljs-keyword">rank</span> := <span class="hljs-keyword">IF</span>(@prev = @curr, @<span class="hljs-keyword">rank</span>, @temp) <span class="hljs-keyword">AS</span> <span class="hljs-keyword">rank</span></span><br><span class="line">  <span class="hljs-keyword">FROM</span></span><br><span class="line">  (</span><br><span class="line">    <span class="hljs-comment">-- 子查詢計算總銷量</span></span><br><span class="line">    <span class="hljs-keyword">SELECT</span> </span><br><span class="line">      drinks.<span class="hljs-string">`name`</span>, </span><br><span class="line">      <span class="hljs-keyword">SUM</span>(<span class="hljs-string">`quantity`</span>) <span class="hljs-keyword">AS</span> <span class="hljs-string">`total_quantity`</span> </span><br><span class="line">    <span class="hljs-keyword">FROM</span> orders</span><br><span class="line">    <span class="hljs-keyword">JOIN</span> drinks <span class="hljs-keyword">ON</span> drinks.<span class="hljs-string">`id`</span> = orders.<span class="hljs-string">`drink_id`</span></span><br><span class="line">    <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`drink_id`</span></span><br><span class="line">    <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-string">`total_quantity`</span> <span class="hljs-keyword">DESC</span></span><br><span class="line">  ) <span class="hljs-keyword">AS</span> a</span><br><span class="line">) <span class="hljs-keyword">AS</span> b;</span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>修改部分：<br>line 2 ：新增 <code>@temp</code> 變數<br>line 13：<code>@temp +=1</code><br>line 16：若兩者銷售量不相等，即沒有並列情形，則將 <code>@temp</code> 賦值給 <code>@rank</code></p>
 <table>
 <thead>
@@ -315,196 +250,236 @@
 <p>而另一種賦值的方式常見於 SELECT e.g. <code>SELECT @test1, @test2 := 2;</code>，但只能用 := 作為賦值運算子。WHY？</p>
 <p>因為 = 出了 SET 這個語句之後，將被視為比較運算子而非賦值運算子。另外這樣的方式可能會於未來版本的 MySQL 中刪除，請注意。</p>
 <h1 id="參考"><a href="#參考" class="headerlink" title="參考"></a>參考</h1><p><a href="https://dev.mysql.com/doc/refman/8.0/en/user-variables.html" target="_blank" rel="noopener">MySQL DOCUMENTATION</a><br><a href="https://newaurora.pixnet.net/blog/post/221610377-mysql%e6%8e%92%e5%ba%8f%e5%90%8d%e6%ac%a1%e3%80%81%e6%8e%92%e8%a1%8c%28%e4%bd%bf%e7%94%a8sql%e8%aa%9e%e6%b3%95%e6%8e%92%e5%ba%8f%29" target="_blank" rel="noopener">MySQL排序名次、排行(使用SQL語法排序)</a></p>
+</body></html>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/chenrohua24/2019/10/23/use-xlsx-style/">以 xlsx-style 處理 Excel 文件</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/chenrohua24/2019/10/16/how-to-rank-in-mysql-1/">[MySQL] 如何排序名次 #1</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
 
     </div>
+</section>
+    <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Ethan Huang&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a
+                        href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
 
-    
-    
-    
-
-      <footer class="post-footer">
-
-        
-
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/chenrohua24/2019/10/16/how-to-rank-in-mysql-1/" rel="prev" title="[MySQL] 如何排序名次 #1">
-      <i class="fa fa-chevron-left"></i> [MySQL] 如何排序名次 #1
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/chenrohua24/2019/10/23/use-xlsx-style/" rel="next" title="以 xlsx-style 處理 Excel 文件">
-      以 xlsx-style 處理 Excel 文件 <i class="fa fa-chevron-right"></i>
-    </a></div>
+            
+            <div class="column is-narrow">
+                <div class="columns is-mobile is-multiline is-centered">
+                
+                    
+                <a class="column is-narrow has-text-black" title="GitHub" href="https://github.com/ppoffice/hexo-theme-minos">
+                    
+                    GitHub
+                    
+                </a>
+                
+                </div>
+            </div>
+            
+            
+        </div>
     </div>
-      </footer>
-    
-  </article>
-  
-  
-  
+</footer>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
 
-  </div>
-
-
-          </div>
-          
-
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/" target="_blank" rel="noopener">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
 <script>
-  window.addEventListener('tabs:register', () => {
-    let activeClass = CONFIG.comments.activeClass;
-    if (CONFIG.comments.storage) {
-      activeClass = localStorage.getItem('comments_active') || activeClass;
-    }
-    if (activeClass) {
-      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
-      if (activeTab) {
-        activeTab.click();
-      }
-    }
-  });
-  if (CONFIG.comments.storage) {
-    window.addEventListener('tabs:click', event => {
-      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
-      let commentClass = event.target.classList[1];
-      localStorage.setItem('comments_active', commentClass);
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
     });
-  }
 </script>
 
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {
+            matchFontHeight: false
+        },
+        SVG: {
+            matchFontHeight: false
+        },
+        CommonHTML: {
+            matchFontHeight: false
+        },
+        tex2jax: {
+            inlineMath: [
+                ['$','$'],
+                ['\\(','\\)']
+            ]
+        }
+    });
+</script>
+
+    
+    
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+    <style>
+        .hljs {
+            position: relative;
+        }
+
+        .hljs .clipboard-btn {
+            float: right;
+            color: #9a9a9a;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .hljs .clipboard-btn:hover {
+          color: #8a8a8a;
+        }
+
+        .hljs > .clipboard-btn {
+            display: none;
+            position: absolute;
+            right: 4px;
+            top: 4px;
+        }
+
+        .hljs:hover > .clipboard-btn {
+            display: inline;
+        }
+
+        .hljs > figcaption > .clipboard-btn {
+            margin-right: 4px;
+        }
+    </style>
+    <script>
+      $(document).ready(function () {
+        $('figure.hljs').each(function(i, figure) {
+          var codeId = 'code-' + i;
+          var code = figure.querySelector('.code');
+          var copyButton = $('<button>Copy <i class="far fa-clipboard"></i></button>');
+          code.id = codeId;
+          copyButton.addClass('clipboard-btn');
+          copyButton.attr('data-clipboard-target-id', codeId);
+
+          var figcaption = figure.querySelector('figcaption');
+
+          if (figcaption) {
+            figcaption.append(copyButton[0]);
+          } else {
+            figure.prepend(copyButton[0]);
+          }
+        })
+
+        var clipboard = new ClipboardJS('.clipboard-btn', {
+          target: function(trigger) {
+            return document.getElementById(trigger.getAttribute('data-clipboard-target-id'));
+          }
+        });
+        clipboard.on('success', function(e) {
+          e.clearSelection();
+        })
+      })
+    </script>
+
+    
+    
+
+    
+
+
+
+<script src="/chenrohua24/js/script.js"></script>
+
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-mask"></div>
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="Type something..." />
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
         </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line toggle-line-first"></span>
-    <span class="toggle-line toggle-line-middle"></span>
-    <span class="toggle-line toggle-line-last"></span>
-  </div>
-
-  <aside class="sidebar">
-    <div class="sidebar-inner">
-
-      <ul class="sidebar-nav motion-element">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <!--noindex-->
-      <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#目標"><span class="nav-number">1.</span> <span class="nav-text">目標</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#無名次並列"><span class="nav-number">2.</span> <span class="nav-text">無名次並列</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#有名次並列"><span class="nav-number">3.</span> <span class="nav-text">有名次並列</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#結論"><span class="nav-number">4.</span> <span class="nav-text">結論</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#參考"><span class="nav-number">5.</span> <span class="nav-text">參考</span></a></li></ol></div>
-      </div>
-      <!--/noindex-->
-
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <img class="site-author-image" itemprop="image" alt="Ethan Huang"
-      src="/chenrohua24/./images/avatar.jpg">
-  <p class="site-author-name" itemprop="name">Ethan Huang</p>
-  <div class="site-description" itemprop="description">具現化系</div>
-</div>
-<div class="site-state-wrap motion-element">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-          <a href="/chenrohua24/archives/">
-        
-          <span class="site-state-item-count">4</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author motion-element">
-      <span class="links-of-author-item">
-        <a href="https://github.com/HuangMinShi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HuangMinShi"><i class="fa fa-fw fa-github"></i>GitHub</a>
-      </span>
-  </div>
-
-
-
-      </div>
-
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
     </div>
-  </aside>
-  <div id="sidebar-dimmer"></div>
-
-
-      </div>
-    </main>
-
-    <footer class="footer">
-      <div class="footer-inner">
-        
-
-<div class="copyright">
-  
-  &copy; 
-  <span itemprop="copyrightYear">2020</span>
-  <span class="with-love">
-    <i class="fa fa-user"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">Ethan Huang</span>
 </div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
-  </div>
-  <span class="post-meta-divider">|</span>
-  <div class="theme-info">Theme – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.2
-  </div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: 'Posts',
+                PAGES: 'Pages',
+                CATEGORIES: 'Categories',
+                TAGS: 'Tags',
+                UNTITLED: '(Untitled)',
+            },
+            CONTENT_URL: '/chenrohua24/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
 
-        
+<script src="/chenrohua24/js/insight.js"></script>
 
-
-
-
-
-
-
-
-      </div>
-    </footer>
-  </div>
-
-  
-  <script src="/chenrohua24/lib/anime.min.js"></script>
-  <script src="/chenrohua24/lib/velocity/velocity.min.js"></script>
-  <script src="/chenrohua24/lib/velocity/velocity.ui.min.js"></script>
-
-<script src="/chenrohua24/js/utils.js"></script>
-
-<script src="/chenrohua24/js/motion.js"></script>
-
-
-<script src="/chenrohua24/js/schemes/muse.js"></script>
-
-
-<script src="/chenrohua24/js/next-boot.js"></script>
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-  
-
+    
 </body>
 </html>
